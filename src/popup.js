@@ -1,9 +1,7 @@
 document.getElementById("download").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "GET_RECORDING" }, (response) => {
-    // check for runtime errors
     if (chrome.runtime.lastError) {
-      console.error("runtime.lastError:", chrome.runtime.lastError);
-      alert("Extension error: " + chrome.runtime.lastError.message);
+      alert("Error: " + chrome.runtime.lastError.message);
       return;
     }
 
@@ -13,6 +11,7 @@ document.getElementById("download").addEventListener("click", () => {
     }
 
     try {
+      // response.buffer is an ArrayBuffer
       const blob = new Blob([response.buffer], {
         type: response.mime || "audio/webm",
       });
@@ -21,16 +20,10 @@ document.getElementById("download").addEventListener("click", () => {
       const a = document.createElement("a");
       a.href = url;
       a.download = "chatgpt-recording.webm";
-      // append+click pattern to work reliably in popup
-      document.body.appendChild(a);
       a.click();
-      a.remove();
-
-      // free the object URL as soon as we don't need it
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Failed to create/download blob:", err);
-      alert("Failed to reconstruct recording: " + err);
+      alert("Failed to reconstruct blob: " + err);
     }
   });
 });
