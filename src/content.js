@@ -3,6 +3,7 @@ let chunks = [];
 let stopTimer = null;
 
 function startRecording() {
+  console.log("Start recording");
   navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
     recorder = new MediaRecorder(stream);
     chunks = [];
@@ -34,6 +35,7 @@ function startRecording() {
 }
 
 function stopRecording() {
+  console.log("Stop recording");
   if (recorder && recorder.state !== "inactive") {
     recorder.stop();
   }
@@ -43,11 +45,13 @@ function stopRecording() {
 }
 
 function clearRecording() {
+  console.log("Clear recording");
   chrome.runtime.sendMessage({ type: "CLEAR_RECORDING" });
 }
 
 // Attach listeners to ChatGPT’s buttons
 function hookButtons() {
+  console.log("Hook buttons");
   const dictateBtn = document.querySelector(
     'button[aria-label="Dictate button"]'
   );

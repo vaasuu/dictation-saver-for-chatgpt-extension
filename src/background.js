@@ -10,6 +10,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     console.log("Recording cleared");
   }
   if (msg.type === "GET_RECORDING") {
+    console.log("getting recording");
     sendResponse(lastRecording);
   }
 });
