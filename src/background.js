@@ -1,16 +1,31 @@
-let lastRecording = null;
+// background.js
+let lastRecording = null; // { buffer: ArrayBuffer, mime: string } or null
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "SAVE_RECORDING") {
-    lastRecording = new Blob([msg.buffer], { type: "audio/webm" });
-    console.log("Recording saved:", lastRecording);
+    // save the ArrayBuffer + mime, do NOT try to convert to a Blob here
+    lastRecording = { buffer: msg.buffer, mime: msg.mime || "audio/webm" };
+    console.log("Saved recording (bytes):", lastRecording.buffer?.byteLength);
+    return; // no response needed
   }
+
   if (msg.type === "CLEAR_RECORDING") {
     lastRecording = null;
-    console.log("Recording cleared");
+    console.log("Cleared recording");
+    return;
   }
+
   if (msg.type === "GET_RECORDING") {
-    console.log("getting recording");
-    sendResponse(lastRecording);
+    if (!lastRecording) {
+      sendResponse({ ok: false });
+      return;
+    }
+    // Return the stored ArrayBuffer + mime. Structured clone will copy the ArrayBuffer.
+    sendResponse({
+      ok: true,
+      buffer: lastRecording.buffer,
+      mime: lastRecording.mime,
+    });
+    return;
   }
 });

@@ -15,9 +15,18 @@ function startRecording() {
     recorder.onstop = () => {
       clearTimeout(stopTimer);
       const blob = new Blob(chunks, { type: "audio/webm" });
-      blob.arrayBuffer().then((buffer) => {
-        chrome.runtime.sendMessage({ type: "SAVE_RECORDING", buffer });
-      });
+
+      // send ArrayBuffer + mime to background
+      blob
+        .arrayBuffer()
+        .then((buffer) => {
+          chrome.runtime.sendMessage({
+            type: "SAVE_RECORDING",
+            buffer, // ArrayBuffer
+            mime: blob.type, // e.g. "audio/webm"
+          });
+        })
+        .catch((err) => console.error("blob -> arrayBuffer failed:", err));
     };
 
     recorder.start();
