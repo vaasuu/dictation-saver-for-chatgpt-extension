@@ -1,10 +1,21 @@
-let recorder;
+/** @type {MediaRecorder | null} */
+let recorder = null;
+/** @type {Blob[]} */
 let chunks = [];
+/** @type {number | null} */
 let stopTimer = null;
+/** @type {number | null} */
+let startTime = null;
 
-function startRecording() {
-  console.log("Start recording");
-  navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+/**
+ * Starts recording audio from the user's microphone
+ * @returns {Promise<void>}
+ */
+async function startRecording() {
+  console.log("Starting audio recording...");
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     recorder = new MediaRecorder(stream);
     chunks = [];
 
@@ -12,41 +23,60 @@ function startRecording() {
       if (e.data.size > 0) chunks.push(e.data);
     };
 
-    recorder.onstop = () => {
+    // Set start time before initializing recorder events
+    startTime = Date.now();
+    const recordingStartTime = startTime; // Capture the start time in closure
+
+    recorder.onstop = async () => {
       clearTimeout(stopTimer);
       const blob = new Blob(chunks, { type: "audio/webm" });
 
-      blob.arrayBuffer().then((buffer) => {
+      try {
+        const buffer = await blob.arrayBuffer();
         const uint8 = new Uint8Array(buffer);
+
+        // Use the captured start time instead of the global variable
+        const duration = Date.now() - recordingStartTime;
 
         chrome.runtime.sendMessage({
           type: "SAVE_RECORDING",
-          data: Array.from(uint8), // JSON-safe array
+          data: Array.from(uint8),
           mime: blob.type || "audio/webm",
+          timestamp: recordingStartTime,
+          duration: duration,
         });
-      });
+      } catch (error) {
+        console.error("Failed to process recording:", error);
+      }
     };
 
     recorder.start();
 
-    // stop after 10 minutes max (600,000 ms)
+    // Auto-stop after 10 minutes (600,000 ms)
     stopTimer = setTimeout(() => {
-      console.log("Auto-stopping after 10 minutes");
+      console.log("Auto-stopping recording after 10 minutes");
       stopRecording();
       const submitBtn = document.querySelector(
         'button[aria-label="Submit dictation"]'
       );
       if (submitBtn) submitBtn.click();
     }, 600_000);
-  });
+  } catch (error) {
+    console.error("Failed to start recording:", error);
+    throw error;
+  }
 }
 
+/**
+ * Stops the current recording
+ */
 function stopRecording() {
-  console.log("Stop recording");
+  console.log("Stopping recording...");
   if (recorder && recorder.state !== "inactive") {
     recorder.stop();
   }
   recorder = null;
+  startTime = null;
   clearTimeout(stopTimer);
   stopTimer = null;
 }
