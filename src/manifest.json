@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Voice Saver",
+  "name": "Dictation Saver for ChatGPT",
   "version": "0.1",
   "description": "Keep a backup of your ChatGPT voice dictations.",
   "permissions": ["scripting", "activeTab"],
