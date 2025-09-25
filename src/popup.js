@@ -11,15 +11,15 @@ document.getElementById("download").addEventListener("click", () => {
     }
 
     try {
-      // response.buffer is an ArrayBuffer
-      const blob = new Blob([response.buffer], {
+      const uint8 = new Uint8Array(response.data); // restore bytes
+      const blob = new Blob([uint8.buffer], {
         type: response.mime || "audio/webm",
       });
-      const url = URL.createObjectURL(blob);
 
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "chatgpt-recording.webm";
+      a.download = `chatgpt-recording-${Date.now()}.webm`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {

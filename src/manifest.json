@@ -3,7 +3,7 @@
   "name": "ChatGPT Voice Saver",
   "version": "0.1",
   "description": "Keep a backup of your ChatGPT voice dictations.",
-  "permissions": ["storage", "scripting", "activeTab"],
+  "permissions": ["scripting", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },

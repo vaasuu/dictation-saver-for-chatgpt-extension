@@ -1,27 +1,25 @@
-let lastBuffer = null;
-let lastMime = null;
+let lastRecording = null;
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "SAVE_RECORDING") {
-    lastBuffer = msg.buffer; // ArrayBuffer
-    lastMime = msg.mime;
-    console.log("Saved buffer length:", lastBuffer.byteLength);
-    return;
-  }
-
-  if (msg.type === "CLEAR_RECORDING") {
-    lastBuffer = null;
-    lastMime = null;
-    return;
-  }
-
-  if (msg.type === "GET_RECORDING") {
-    if (!lastBuffer) {
+    lastRecording = {
+      data: msg.data,
+      mime: msg.mime,
+    };
+    sendResponse({ ok: true });
+  } else if (msg.type === "CLEAR_RECORDING") {
+    lastRecording = null;
+    sendResponse({ ok: true });
+  } else if (msg.type === "GET_RECORDING") {
+    if (lastRecording) {
+      sendResponse({
+        ok: true,
+        data: lastRecording.data,
+        mime: lastRecording.mime,
+      });
+    } else {
       sendResponse({ ok: false });
-      return;
     }
-    // send back raw ArrayBuffer and mime
-    sendResponse({ ok: true, buffer: lastBuffer, mime: lastMime });
-    return;
   }
+  return true;
 });

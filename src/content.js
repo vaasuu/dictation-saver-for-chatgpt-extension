@@ -17,10 +17,11 @@ function startRecording() {
       const blob = new Blob(chunks, { type: "audio/webm" });
 
       blob.arrayBuffer().then((buffer) => {
-        // IMPORTANT: send the raw ArrayBuffer, not inside another object
+        const uint8 = new Uint8Array(buffer);
+
         chrome.runtime.sendMessage({
           type: "SAVE_RECORDING",
-          buffer, // raw ArrayBuffer
+          data: Array.from(uint8), // JSON-safe array
           mime: blob.type || "audio/webm",
         });
       });
