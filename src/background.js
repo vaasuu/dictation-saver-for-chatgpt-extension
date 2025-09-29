@@ -1,6 +1,6 @@
 /** @type {Array<{data: number[], mime: string, timestamp: number, duration: number}>} */
 let recordings = [];
-const MAX_RECORDINGS = 3;
+const MAX_RECORDINGS = 2;
 const STORAGE_KEY = "recordings";
 
 /**
@@ -28,6 +28,24 @@ async function saveRecordings() {
     console.log(`Saved ${recordings.length} recordings to storage`);
   } catch (error) {
     console.error("Failed to save recordings to storage:", error);
+
+    // If quota exceeded, remove oldest recordings until it fits
+    if (error.message && error.message.includes("quota exceeded")) {
+      console.log("Storage quota exceeded, removing oldest recordings...");
+      while (recordings.length > 0) {
+        recordings.pop(); // Remove oldest (last in array)
+        try {
+          await chrome.storage.local.set({ [STORAGE_KEY]: recordings });
+          console.log(`Saved ${recordings.length} recordings after removing old ones`);
+          break;
+        } catch (retryError) {
+          if (!(retryError.message && retryError.message.includes("quota exceeded"))) {
+            console.error("Failed to save after removing recordings:", retryError);
+            break;
+          }
+        }
+      }
+    }
   }
 }
 
