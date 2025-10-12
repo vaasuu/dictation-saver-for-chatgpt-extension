@@ -1,5 +1,6 @@
-/** @type {IDBDatabase | null} */
-let db = null;
+import { RecordingMetadata, RecordingData, Message, MessageResponse } from './types';
+
+let db: IDBDatabase | null = null;
 const DB_NAME = "ChatGPTDictationDB";
 const DB_VERSION = 1;
 const RECORDINGS_STORE = "recordings";
@@ -8,9 +9,8 @@ const MAX_RECORDINGS = 3;
 
 /**
  * Opens IndexedDB database
- * @returns {Promise<IDBDatabase>}
  */
-async function openDB() {
+async function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -52,9 +52,8 @@ async function openDB() {
 
 /**
  * Loads recordings metadata from IndexedDB
- * @returns {Promise<Array<{id: number, timestamp: number, duration: number, mime: string}>>}
  */
-async function loadRecordings() {
+async function loadRecordings(): Promise<RecordingMetadata[]> {
   try {
     if (!db) await openDB();
 
@@ -85,14 +84,8 @@ async function loadRecordings() {
 
 /**
  * Saves a new recording to IndexedDB
- * @param {Object} recording - Recording data
- * @param {Uint8Array} recording.data - Audio data
- * @param {string} recording.mime - MIME type
- * @param {number} recording.timestamp - Timestamp
- * @param {number} recording.duration - Duration in ms
- * @returns {Promise<void>}
  */
-async function saveRecording(recording) {
+async function saveRecording(recording: RecordingData): Promise<void> {
   try {
     if (!db) await openDB();
 
@@ -182,10 +175,8 @@ async function saveRecording(recording) {
 
 /**
  * Gets a specific recording by index
- * @param {number} index - Index of recording (0 = newest)
- * @returns {Promise<{data: Blob, mime: string, timestamp: number, duration: number} | null>}
  */
-async function getRecording(index) {
+async function getRecording(index: number): Promise<{ data: Blob; mime: string; timestamp: number; duration: number } | null> {
   try {
     if (!db) await openDB();
 
@@ -227,9 +218,8 @@ async function getRecording(index) {
 
 /**
  * Clears all recordings from IndexedDB
- * @returns {Promise<void>}
  */
-async function clearRecordings() {
+async function clearRecordings(): Promise<void> {
   try {
     if (!db) await openDB();
 
@@ -264,7 +254,7 @@ openDB().catch((error) =>
   console.error("Failed to initialize database:", error)
 );
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
   (async () => {
     try {
       if (msg.type === "SAVE_RECORDING") {
@@ -274,10 +264,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           timestamp: msg.timestamp,
           duration: msg.duration || 0,
         });
-        sendResponse({ ok: true });
+        sendResponse({ ok: true } as MessageResponse);
       } else if (msg.type === "CLEAR_RECORDINGS") {
         await clearRecordings();
-        sendResponse({ ok: true });
+        sendResponse({ ok: true } as MessageResponse);
       } else if (msg.type === "GET_RECORDINGS") {
         const recordings = await loadRecordings();
         // Sort by timestamp descending (newest first)
@@ -285,7 +275,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({
           ok: true,
           recordings: recordings,
-        });
+        } as MessageResponse);
       } else if (msg.type === "GET_RECORDING") {
         const index = msg.index || 0;
         const recording = await getRecording(index);
@@ -299,14 +289,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             mime: recording.mime,
             timestamp: recording.timestamp,
             duration: recording.duration,
-          });
+          } as MessageResponse);
         } else {
-          sendResponse({ ok: false });
+          sendResponse({ ok: false } as MessageResponse);
         }
       }
     } catch (error) {
       console.error("Error handling message:", error);
-      sendResponse({ ok: false, error: error.message });
+      sendResponse({ ok: false, error: (error as Error).message } as MessageResponse);
     }
   })();
 

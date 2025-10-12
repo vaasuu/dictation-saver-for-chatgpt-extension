@@ -1,26 +1,28 @@
 # Agent Guidelines for ChatGPT Dictation Saver Extension
 
 ## Build/Lint/Test Commands
-- No build tools required (vanilla JavaScript Chrome extension)
+- Build: `npm run build` (Vite bundles TypeScript to dist/)
+- Dev: `npm run dev` (Vite dev server for development)
 - No linting or testing framework configured
-- Load extension manually in Chrome for testing
+- Load extension manually in Chrome from dist/ for testing
 
 ## Code Style Guidelines
 
 ### Language & Environment
-- **Language**: ES6+ JavaScript (no TypeScript)
+- **Language**: TypeScript (compiled to ES2020)
 - **Target**: Chrome extension manifest v3
-- **Modules**: No imports/exports (vanilla JS)
+- **Modules**: ES modules with Vite bundling
 
 ### Documentation
-- Use JSDoc comments for all functions with parameter types and return types
-- Use `/** @type {Type} */` for variable type annotations
-- Document function parameters and return values
+- Use TypeScript type annotations for all functions, parameters, and variables
+- Use JSDoc comments for additional documentation where needed
+- Define interfaces for complex types (e.g., message types, data structures)
 
 ### Naming Conventions
 - **Variables/Functions**: camelCase (e.g., `startRecording`, `formatDuration`)
 - **Constants**: ALL_CAPS with underscores (e.g., `MAX_RECORDINGS`)
-- **Files**: lowercase with hyphens (e.g., `background.js`, `content.js`)
+- **Files**: lowercase with hyphens (e.g., `background.ts`, `content.ts`)
+- **Types/Interfaces**: PascalCase (e.g., `RecordingMetadata`, `Message`)
 
 ### Formatting
 - **Indentation**: 2 spaces
@@ -41,6 +43,7 @@
 - Use async/await for promises
 - Destructure objects when accessing multiple properties
 - Use dataset attributes for DOM element state tracking
+- Use strict null checks with `!` for guaranteed non-null elements
 
 ### Security
 - No sensitive data handling required

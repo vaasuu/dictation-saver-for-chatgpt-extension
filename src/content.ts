@@ -1,17 +1,12 @@
-/** @type {MediaRecorder | null} */
-let recorder = null;
-/** @type {Blob[]} */
-let chunks = [];
-/** @type {number | null} */
-let stopTimer = null;
-/** @type {number | null} */
-let startTime = null;
+let recorder: MediaRecorder | null = null;
+let chunks: Blob[] = [];
+let stopTimer: number | null = null;
+let startTime: number | null = null;
 
 /**
  * Starts recording audio from the user's microphone
- * @returns {Promise<void>}
  */
-async function startRecording() {
+async function startRecording(): Promise<void> {
   console.log("Starting audio recording...");
 
   try {
@@ -81,13 +76,13 @@ function stopRecording() {
   stopTimer = null;
 }
 
-function clearRecording() {
+function clearRecording(): void {
   console.log("Clear recording");
   chrome.runtime.sendMessage({ type: "CLEAR_RECORDING" });
 }
 
 // Attach listeners to ChatGPT’s buttons
-function hookButtons() {
+function hookButtons(): void {
   console.log("Hook buttons");
   const dictateBtn = document.querySelector(
     'button[aria-label="Dictate button"]'

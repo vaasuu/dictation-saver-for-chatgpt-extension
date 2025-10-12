@@ -1,9 +1,7 @@
 /**
  * Formats a duration in milliseconds to a readable string
- * @param {number} duration - Duration in milliseconds
- * @returns {string}
  */
-function formatDuration(duration) {
+function formatDuration(duration: number): string {
   const seconds = Math.floor(duration / 1000);
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -12,10 +10,9 @@ function formatDuration(duration) {
 
 /**
  * Downloads a recording
- * @param {number} index - Index of the recording to download
  */
-function downloadRecording(index) {
-  chrome.runtime.sendMessage({ type: "GET_RECORDING", index }, (response) => {
+function downloadRecording(index: number): void {
+  chrome.runtime.sendMessage({ type: "GET_RECORDING", index }, (response: any) => {
     if (chrome.runtime.lastError) {
       alert("Error: " + chrome.runtime.lastError.message);
       return;
@@ -49,16 +46,16 @@ function downloadRecording(index) {
 /**
  * Updates the recordings list in the UI
  */
-let currentAudio = null;
+let currentAudio: HTMLAudioElement | null = null;
 
-function playRecording(index) {
+function playRecording(index: number): void {
   // Stop any currently playing audio
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
   }
 
-  chrome.runtime.sendMessage({ type: "GET_RECORDING", index }, (response) => {
+  chrome.runtime.sendMessage({ type: "GET_RECORDING", index }, (response: any) => {
     if (!response || !response.ok) {
       alert("Recording not available.");
       return;
@@ -79,7 +76,7 @@ function playRecording(index) {
         // Update play button state
         const playBtn = document.querySelector(
           `button[data-play-index="${index}"]`
-        );
+        ) as HTMLButtonElement | null;
         if (playBtn) {
           playBtn.innerHTML = "▶️";
         }
@@ -88,7 +85,7 @@ function playRecording(index) {
       currentAudio.onpause = () => {
         const playBtn = document.querySelector(
           `button[data-play-index="${index}"]`
-        );
+        ) as HTMLButtonElement | null;
         if (playBtn) {
           playBtn.innerHTML = "▶️";
         }
@@ -97,7 +94,25 @@ function playRecording(index) {
       currentAudio.onplay = () => {
         const playBtn = document.querySelector(
           `button[data-play-index="${index}"]`
-        );
+        ) as HTMLButtonElement | null;
+        if (playBtn) {
+          playBtn.innerHTML = "⏸️";
+        }
+      };
+
+      currentAudio.onpause = () => {
+        const playBtn = document.querySelector(
+          `button[data-play-index="${index}"]`
+        ) as HTMLButtonElement | null;
+        if (playBtn) {
+          playBtn.innerHTML = "▶️";
+        }
+      };
+
+      currentAudio.onplay = () => {
+        const playBtn = document.querySelector(
+          `button[data-play-index="${index}"]`
+        ) as HTMLButtonElement | null;
         if (playBtn) {
           playBtn.innerHTML = "⏸️";
         }
@@ -112,8 +127,8 @@ function playRecording(index) {
   });
 }
 
-function updateRecordingsList() {
-  chrome.runtime.sendMessage({ type: "GET_RECORDINGS" }, (response) => {
+function updateRecordingsList(): void {
+  chrome.runtime.sendMessage({ type: "GET_RECORDINGS" }, (response: any) => {
     if (!response || !response.ok || !response.recordings) {
       document.getElementById("recordings-list").innerHTML = `
         <tr>
@@ -124,9 +139,9 @@ function updateRecordingsList() {
     }
 
     const recordings = response.recordings;
-    const tbody = document.getElementById("recordings-list");
+    const tbody = document.getElementById("recordings-list")!;
     tbody.innerHTML = recordings
-      .map((recording, index) => {
+      .map((recording: any, index: number) => {
         const date = new Date(recording.timestamp);
         const formattedDate = date.toLocaleString();
         const duration = recording.duration
@@ -151,19 +166,20 @@ function updateRecordingsList() {
 }
 
 // Initialize the recordings list
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", (): void => {
   updateRecordingsList();
 
   // Add click handler for download buttons
-  document.getElementById("recordings-list").addEventListener("click", (e) => {
+  document.getElementById("recordings-list")!.addEventListener("click", (e: Event): void => {
+    const target = e.target as HTMLElement;
     const index = parseInt(
-      e.target.dataset.index || e.target.dataset.playIndex
+      target.dataset.index || target.dataset.playIndex || ""
     );
     if (!isNaN(index)) {
-      if (e.target.classList.contains("download-btn")) {
+      if (target.classList.contains("download-btn")) {
         downloadRecording(index);
-      } else if (e.target.classList.contains("play-btn")) {
-        if (currentAudio && e.target.innerHTML === "⏸️") {
+      } else if (target.classList.contains("play-btn")) {
+        if (currentAudio && target.innerHTML === "⏸️") {
           currentAudio.pause();
         } else {
           playRecording(index);

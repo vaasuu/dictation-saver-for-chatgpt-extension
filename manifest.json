@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Dictation Saver for ChatGPT",
-  "version": "0.2",
+  "version": "0.3.0",
   "description": "Keep a backup of your ChatGPT voice dictations.",
   "permissions": ["scripting", "activeTab", "storage"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background.ts"
   },
   "action": {
     "default_popup": "popup.html"
@@ -13,7 +13,7 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*"],
-      "js": ["content.js"]
+      "js": ["src/content.ts"]
     }
   ]
 }
