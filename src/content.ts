@@ -2,6 +2,7 @@ let recorder: MediaRecorder | null = null;
 let chunks: Blob[] = [];
 let stopTimer: number | null = null;
 let startTime: number | null = null;
+let isCanceling = false;
 
 /**
  * Starts recording audio from the user's microphone
@@ -24,6 +25,11 @@ async function startRecording(): Promise<void> {
 
     recorder.onstop = async () => {
       if (stopTimer !== null) clearTimeout(stopTimer);
+      if (isCanceling) {
+        console.log('Recording canceled, not saving');
+        isCanceling = false;
+        return;
+      }
       const blob = new Blob(chunks, { type: 'audio/webm' });
 
       try {
@@ -67,6 +73,7 @@ async function startRecording(): Promise<void> {
  */
 function stopRecording() {
   console.log('Stopping recording...');
+  isCanceling = false;
   if (recorder && recorder.state !== 'inactive') {
     recorder.stop();
   }
@@ -76,10 +83,19 @@ function stopRecording() {
   stopTimer = null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function clearRecording(): void {
-  console.log('Clear recording');
-  chrome.runtime.sendMessage({ type: 'CLEAR_RECORDING' });
+/**
+ * Cancels the current recording without saving
+ */
+function cancelRecording(): void {
+  console.log('Canceling recording...');
+  isCanceling = true;
+  if (recorder && recorder.state !== 'inactive') {
+    recorder.stop();
+  }
+  recorder = null;
+  startTime = null;
+  chunks = [];
+  if (stopTimer !== null) clearTimeout(stopTimer);
   stopTimer = null;
 }
 
@@ -89,7 +105,6 @@ function hookButtons(): void {
   const dictateBtn = document.querySelector(
     'button[aria-label="Dictate button"]'
   ) as HTMLElement | null;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const stopBtn = document.querySelector(
     'button[aria-label="Stop dictation"]'
   ) as HTMLElement | null;
@@ -100,6 +115,11 @@ function hookButtons(): void {
   if (dictateBtn && !dictateBtn.dataset.hooked) {
     dictateBtn.addEventListener('click', startRecording);
     dictateBtn.dataset.hooked = 'true';
+  }
+
+  if (stopBtn && !stopBtn.dataset.hooked) {
+    stopBtn.addEventListener('click', cancelRecording);
+    stopBtn.dataset.hooked = 'true';
   }
 
   if (submitBtn && !submitBtn.dataset.hooked) {

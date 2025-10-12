@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Dictation Saver for ChatGPT",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Keep a backup of your ChatGPT voice dictations.",
   "permissions": ["scripting", "activeTab", "storage"],
   "background": {
