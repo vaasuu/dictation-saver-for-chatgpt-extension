@@ -1,10 +1,15 @@
-import { RecordingMetadata, RecordingData, Message, MessageResponse } from './types';
+import {
+  RecordingMetadata,
+  RecordingData,
+  Message,
+  MessageResponse,
+} from './types';
 
 let db: IDBDatabase | null = null;
-const DB_NAME = "ChatGPTDictationDB";
+const DB_NAME = 'ChatGPTDictationDB';
 const DB_VERSION = 1;
-const RECORDINGS_STORE = "recordings";
-const METADATA_STORE = "metadata";
+const RECORDINGS_STORE = 'recordings';
+const METADATA_STORE = 'metadata';
 const MAX_RECORDINGS = 3;
 
 /**
@@ -15,13 +20,13 @@ async function openDB(): Promise<IDBDatabase> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      console.error("Failed to open IndexedDB:", request.error);
+      console.error('Failed to open IndexedDB:', request.error);
       reject(request.error);
     };
 
     request.onsuccess = () => {
       db = request.result;
-      console.log("IndexedDB opened successfully");
+      console.log('IndexedDB opened successfully');
       resolve(db);
     };
 
@@ -31,10 +36,10 @@ async function openDB(): Promise<IDBDatabase> {
       // Create recordings store for audio blobs
       if (!db.objectStoreNames.contains(RECORDINGS_STORE)) {
         const recordingsStore = db.createObjectStore(RECORDINGS_STORE, {
-          keyPath: "id",
+          keyPath: 'id',
           autoIncrement: true,
         });
-        recordingsStore.createIndex("timestamp", "timestamp", {
+        recordingsStore.createIndex('timestamp', 'timestamp', {
           unique: false,
         });
       }
@@ -42,9 +47,9 @@ async function openDB(): Promise<IDBDatabase> {
       // Create metadata store for recording info
       if (!db.objectStoreNames.contains(METADATA_STORE)) {
         const metadataStore = db.createObjectStore(METADATA_STORE, {
-          keyPath: "id",
+          keyPath: 'id',
         });
-        metadataStore.createIndex("timestamp", "timestamp", { unique: false });
+        metadataStore.createIndex('timestamp', 'timestamp', { unique: false });
       }
     };
   });
@@ -58,7 +63,7 @@ async function loadRecordings(): Promise<RecordingMetadata[]> {
     if (!db) await openDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([METADATA_STORE], "readonly");
+      const transaction = db.transaction([METADATA_STORE], 'readonly');
       const store = transaction.objectStore(METADATA_STORE);
       const request = store.getAll();
 
@@ -70,14 +75,14 @@ async function loadRecordings(): Promise<RecordingMetadata[]> {
 
       request.onerror = () => {
         console.error(
-          "Failed to load recordings from IndexedDB:",
+          'Failed to load recordings from IndexedDB:',
           request.error
         );
         reject(request.error);
       };
     });
   } catch (error) {
-    console.error("Failed to load recordings:", error);
+    console.error('Failed to load recordings:', error);
     return [];
   }
 }
@@ -95,7 +100,7 @@ async function saveRecording(recording: RecordingData): Promise<void> {
     // Start transaction
     const transaction = db.transaction(
       [RECORDINGS_STORE, METADATA_STORE],
-      "readwrite"
+      'readwrite'
     );
 
     return new Promise((resolve, reject) => {
@@ -108,8 +113,8 @@ async function saveRecording(recording: RecordingData): Promise<void> {
 
         if (currentCount >= MAX_RECORDINGS) {
           // Get oldest recording to remove
-          const index = metadataStore.index("timestamp");
-          const oldestRequest = index.openCursor(null, "next");
+          const index = metadataStore.index('timestamp');
+          const oldestRequest = index.openCursor(null, 'next');
 
           oldestRequest.onsuccess = (event) => {
             const cursor = event.target.result;
@@ -152,7 +157,7 @@ async function saveRecording(recording: RecordingData): Promise<void> {
 
         metadataRequest.onerror = () => {
           console.error(
-            "Failed to save recording metadata:",
+            'Failed to save recording metadata:',
             metadataRequest.error
           );
           reject(metadataRequest.error);
@@ -160,7 +165,7 @@ async function saveRecording(recording: RecordingData): Promise<void> {
       };
 
       blobRequest.onerror = () => {
-        console.error("Failed to save recording blob:", blobRequest.error);
+        console.error('Failed to save recording blob:', blobRequest.error);
         reject(blobRequest.error);
       };
 
@@ -168,7 +173,7 @@ async function saveRecording(recording: RecordingData): Promise<void> {
       transaction.onerror = () => reject(transaction.error);
     });
   } catch (error) {
-    console.error("Failed to save recording:", error);
+    console.error('Failed to save recording:', error);
     throw error;
   }
 }
@@ -176,7 +181,12 @@ async function saveRecording(recording: RecordingData): Promise<void> {
 /**
  * Gets a specific recording by index
  */
-async function getRecording(index: number): Promise<{ data: Blob; mime: string; timestamp: number; duration: number } | null> {
+async function getRecording(index: number): Promise<{
+  data: Blob;
+  mime: string;
+  timestamp: number;
+  duration: number;
+} | null> {
   try {
     if (!db) await openDB();
 
@@ -188,7 +198,7 @@ async function getRecording(index: number): Promise<{ data: Blob; mime: string; 
     const recording = recordings[index];
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([RECORDINGS_STORE], "readonly");
+      const transaction = db.transaction([RECORDINGS_STORE], 'readonly');
       const store = transaction.objectStore(RECORDINGS_STORE);
       const request = store.get(recording.id);
 
@@ -206,12 +216,12 @@ async function getRecording(index: number): Promise<{ data: Blob; mime: string; 
       };
 
       request.onerror = () => {
-        console.error("Failed to get recording:", request.error);
+        console.error('Failed to get recording:', request.error);
         reject(request.error);
       };
     });
   } catch (error) {
-    console.error("Failed to get recording:", error);
+    console.error('Failed to get recording:', error);
     return null;
   }
 }
@@ -225,7 +235,7 @@ async function clearRecordings(): Promise<void> {
 
     const transaction = db.transaction(
       [RECORDINGS_STORE, METADATA_STORE],
-      "readwrite"
+      'readwrite'
     );
     const recordingsStore = transaction.objectStore(RECORDINGS_STORE);
     const metadataStore = transaction.objectStore(METADATA_STORE);
@@ -235,29 +245,29 @@ async function clearRecordings(): Promise<void> {
 
     return new Promise((resolve, reject) => {
       transaction.oncomplete = () => {
-        console.log("Cleared all recordings from IndexedDB");
+        console.log('Cleared all recordings from IndexedDB');
         resolve();
       };
       transaction.onerror = () => {
-        console.error("Failed to clear recordings:", transaction.error);
+        console.error('Failed to clear recordings:', transaction.error);
         reject(transaction.error);
       };
     });
   } catch (error) {
-    console.error("Failed to clear recordings:", error);
+    console.error('Failed to clear recordings:', error);
     throw error;
   }
 }
 
 // Initialize database on startup
 openDB().catch((error) =>
-  console.error("Failed to initialize database:", error)
+  console.error('Failed to initialize database:', error)
 );
 
 chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
   (async () => {
     try {
-      if (msg.type === "SAVE_RECORDING") {
+      if (msg.type === 'SAVE_RECORDING') {
         await saveRecording({
           data: new Uint8Array(msg.data),
           mime: msg.mime,
@@ -265,10 +275,10 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
           duration: msg.duration || 0,
         });
         sendResponse({ ok: true } as MessageResponse);
-      } else if (msg.type === "CLEAR_RECORDINGS") {
+      } else if (msg.type === 'CLEAR_RECORDINGS') {
         await clearRecordings();
         sendResponse({ ok: true } as MessageResponse);
-      } else if (msg.type === "GET_RECORDINGS") {
+      } else if (msg.type === 'GET_RECORDINGS') {
         const recordings = await loadRecordings();
         // Sort by timestamp descending (newest first)
         recordings.sort((a, b) => b.timestamp - a.timestamp);
@@ -276,7 +286,7 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
           ok: true,
           recordings: recordings,
         } as MessageResponse);
-      } else if (msg.type === "GET_RECORDING") {
+      } else if (msg.type === 'GET_RECORDING') {
         const index = msg.index || 0;
         const recording = await getRecording(index);
         if (recording) {
@@ -295,8 +305,11 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
         }
       }
     } catch (error) {
-      console.error("Error handling message:", error);
-      sendResponse({ ok: false, error: (error as Error).message } as MessageResponse);
+      console.error('Error handling message:', error);
+      sendResponse({
+        ok: false,
+        error: (error as Error).message,
+      } as MessageResponse);
     }
   })();
 

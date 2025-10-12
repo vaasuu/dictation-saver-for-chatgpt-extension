@@ -5,6 +5,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +24,11 @@
   "homepage": "https://github.com/vaasuu/dictation-saver-for-chatgpt-extension#readme",
   "devDependencies": {
     "@types/chrome": "^0.1.24",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.9",
     "vite-plugin-chrome-extension": "^0.0.7"

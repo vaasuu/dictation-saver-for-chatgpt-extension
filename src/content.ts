@@ -7,7 +7,7 @@ let startTime: number | null = null;
  * Starts recording audio from the user's microphone
  */
 async function startRecording(): Promise<void> {
-  console.log("Starting audio recording...");
+  console.log('Starting audio recording...');
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -24,7 +24,7 @@ async function startRecording(): Promise<void> {
 
     recorder.onstop = async () => {
       clearTimeout(stopTimer);
-      const blob = new Blob(chunks, { type: "audio/webm" });
+      const blob = new Blob(chunks, { type: 'audio/webm' });
 
       try {
         const buffer = await blob.arrayBuffer();
@@ -34,14 +34,14 @@ async function startRecording(): Promise<void> {
         const duration = Date.now() - recordingStartTime;
 
         chrome.runtime.sendMessage({
-          type: "SAVE_RECORDING",
+          type: 'SAVE_RECORDING',
           data: Array.from(uint8),
-          mime: blob.type || "audio/webm",
+          mime: blob.type || 'audio/webm',
           timestamp: recordingStartTime,
           duration: duration,
         });
       } catch (error) {
-        console.error("Failed to process recording:", error);
+        console.error('Failed to process recording:', error);
       }
     };
 
@@ -49,7 +49,7 @@ async function startRecording(): Promise<void> {
 
     // Auto-stop after 10 minutes (600,000 ms)
     stopTimer = setTimeout(() => {
-      console.log("Auto-stopping recording after 10 minutes");
+      console.log('Auto-stopping recording after 10 minutes');
       stopRecording();
       const submitBtn = document.querySelector(
         'button[aria-label="Submit dictation"]'
@@ -57,7 +57,7 @@ async function startRecording(): Promise<void> {
       if (submitBtn) submitBtn.click();
     }, 600_000);
   } catch (error) {
-    console.error("Failed to start recording:", error);
+    console.error('Failed to start recording:', error);
     throw error;
   }
 }
@@ -66,8 +66,8 @@ async function startRecording(): Promise<void> {
  * Stops the current recording
  */
 function stopRecording() {
-  console.log("Stopping recording...");
-  if (recorder && recorder.state !== "inactive") {
+  console.log('Stopping recording...');
+  if (recorder && recorder.state !== 'inactive') {
     recorder.stop();
   }
   recorder = null;
@@ -77,13 +77,13 @@ function stopRecording() {
 }
 
 function clearRecording(): void {
-  console.log("Clear recording");
-  chrome.runtime.sendMessage({ type: "CLEAR_RECORDING" });
+  console.log('Clear recording');
+  chrome.runtime.sendMessage({ type: 'CLEAR_RECORDING' });
 }
 
 // Attach listeners to ChatGPT’s buttons
 function hookButtons(): void {
-  console.log("Hook buttons");
+  console.log('Hook buttons');
   const dictateBtn = document.querySelector(
     'button[aria-label="Dictate button"]'
   );
@@ -93,21 +93,21 @@ function hookButtons(): void {
   );
 
   if (dictateBtn && !dictateBtn.dataset.hooked) {
-    dictateBtn.addEventListener("click", startRecording);
-    dictateBtn.dataset.hooked = "true";
+    dictateBtn.addEventListener('click', startRecording);
+    dictateBtn.dataset.hooked = 'true';
   }
 
   if (stopBtn && !stopBtn.dataset.hooked) {
-    stopBtn.addEventListener("click", () => {
+    stopBtn.addEventListener('click', () => {
       stopRecording();
       clearRecording();
     });
-    stopBtn.dataset.hooked = "true";
+    stopBtn.dataset.hooked = 'true';
   }
 
   if (submitBtn && !submitBtn.dataset.hooked) {
-    submitBtn.addEventListener("click", stopRecording);
-    submitBtn.dataset.hooked = "true";
+    submitBtn.addEventListener('click', stopRecording);
+    submitBtn.dataset.hooked = 'true';
   }
 }
 
