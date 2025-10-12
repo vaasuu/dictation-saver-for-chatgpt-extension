@@ -3,8 +3,7 @@
   "description": "Dictation Saver for ChatGPT is a Chrome extension that helps you keep a backup of your ChatGPT voice dictations. Sometimes, ChatGPT’s built-in transcription can fail, misidentify the spoken language, or return empty text, causing you to lose the content you just spoke. This extension exists to prevent that loss by recording your audio in parallel while you dictate.",
   "private": true,
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
+    "build": "vite build && node build-manifest.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write .",
@@ -30,7 +29,6 @@
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9",
-    "vite-plugin-chrome-extension": "^0.0.7"
+    "vite": "^7.1.9"
   }
 }
