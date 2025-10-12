@@ -25,13 +25,13 @@ async function openDB(): Promise<IDBDatabase> {
     };
 
     request.onsuccess = () => {
-      db = request.result;
+      db = request.result as IDBDatabase;
       console.log('IndexedDB opened successfully');
       resolve(db);
     };
 
     request.onupgradeneeded = (event) => {
-      const db = event.target.result;
+      const db = (event.target as IDBOpenDBRequest).result;
 
       // Create recordings store for audio blobs
       if (!db.objectStoreNames.contains(RECORDINGS_STORE)) {
@@ -63,7 +63,7 @@ async function loadRecordings(): Promise<RecordingMetadata[]> {
     if (!db) await openDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([METADATA_STORE], 'readonly');
+      const transaction = db!.transaction([METADATA_STORE], 'readonly');
       const store = transaction.objectStore(METADATA_STORE);
       const request = store.getAll();
 
@@ -93,12 +93,15 @@ async function loadRecordings(): Promise<RecordingMetadata[]> {
 async function saveRecording(recording: RecordingData): Promise<void> {
   try {
     if (!db) await openDB();
+    if (!db) throw new Error('Failed to open DB');
 
     // Convert Uint8Array to Blob
-    const blob = new Blob([recording.data], { type: recording.mime });
+    const blob = new Blob([recording.data as BlobPart], {
+      type: recording.mime,
+    });
 
     // Start transaction
-    const transaction = db.transaction(
+    const transaction = db!.transaction(
       [RECORDINGS_STORE, METADATA_STORE],
       'readwrite'
     );
@@ -117,7 +120,7 @@ async function saveRecording(recording: RecordingData): Promise<void> {
           const oldestRequest = index.openCursor(null, 'next');
 
           oldestRequest.onsuccess = (event) => {
-            const cursor = event.target.result;
+            const cursor = (event.target as IDBRequest).result;
             if (cursor) {
               const oldestId = cursor.value.id;
 
@@ -198,7 +201,7 @@ async function getRecording(index: number): Promise<{
     const recording = recordings[index];
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([RECORDINGS_STORE], 'readonly');
+      const transaction = db!.transaction([RECORDINGS_STORE], 'readonly');
       const store = transaction.objectStore(RECORDINGS_STORE);
       const request = store.get(recording.id);
 
@@ -232,8 +235,9 @@ async function getRecording(index: number): Promise<{
 async function clearRecordings(): Promise<void> {
   try {
     if (!db) await openDB();
+    if (!db) throw new Error('Failed to open DB');
 
-    const transaction = db.transaction(
+    const transaction = db!.transaction(
       [RECORDINGS_STORE, METADATA_STORE],
       'readwrite'
     );

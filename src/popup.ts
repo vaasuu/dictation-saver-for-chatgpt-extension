@@ -20,11 +20,6 @@ function downloadRecording(index: number): void {
         return;
       }
 
-      if (!response || !response.ok) {
-        alert('Recording not available.');
-        return;
-      }
-
       try {
         const uint8 = new Uint8Array(response.data);
         const blob = new Blob([uint8.buffer], {
@@ -136,16 +131,20 @@ function playRecording(index: number): void {
 function updateRecordingsList(): void {
   chrome.runtime.sendMessage({ type: 'GET_RECORDINGS' }, (response: any) => {
     if (!response || !response.ok || !response.recordings) {
-      document.getElementById('recordings-list').innerHTML = `
-        <tr>
-          <td colspan="4" class="no-recordings">No recordings available</td>
-        </tr>
-      `;
+      const tbody = document.getElementById('recordings-list');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="no-recordings">No recordings available</td>
+          </tr>
+        `;
+      }
       return;
     }
 
     const recordings = response.recordings;
-    const tbody = document.getElementById('recordings-list')!;
+    const tbody = document.getElementById('recordings-list');
+    if (!tbody) return;
     tbody.innerHTML = recordings
       .map((recording: any, index: number) => {
         const date = new Date(recording.timestamp);

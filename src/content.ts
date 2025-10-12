@@ -23,7 +23,7 @@ async function startRecording(): Promise<void> {
     const recordingStartTime = startTime; // Capture the start time in closure
 
     recorder.onstop = async () => {
-      clearTimeout(stopTimer);
+      if (stopTimer !== null) clearTimeout(stopTimer);
       const blob = new Blob(chunks, { type: 'audio/webm' });
 
       try {
@@ -53,7 +53,7 @@ async function startRecording(): Promise<void> {
       stopRecording();
       const submitBtn = document.querySelector(
         'button[aria-label="Submit dictation"]'
-      );
+      ) as HTMLButtonElement | null;
       if (submitBtn) submitBtn.click();
     }, 600_000);
   } catch (error) {
@@ -72,13 +72,15 @@ function stopRecording() {
   }
   recorder = null;
   startTime = null;
-  clearTimeout(stopTimer);
+  if (stopTimer !== null) clearTimeout(stopTimer);
   stopTimer = null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function clearRecording(): void {
   console.log('Clear recording');
   chrome.runtime.sendMessage({ type: 'CLEAR_RECORDING' });
+  stopTimer = null;
 }
 
 // Attach listeners to ChatGPT’s buttons
@@ -86,23 +88,18 @@ function hookButtons(): void {
   console.log('Hook buttons');
   const dictateBtn = document.querySelector(
     'button[aria-label="Dictate button"]'
-  );
-  const stopBtn = document.querySelector('button[aria-label="Stop dictation"]');
+  ) as HTMLElement | null;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const stopBtn = document.querySelector(
+    'button[aria-label="Stop dictation"]'
+  ) as HTMLElement | null;
   const submitBtn = document.querySelector(
     'button[aria-label="Submit dictation"]'
-  );
+  ) as HTMLElement | null;
 
   if (dictateBtn && !dictateBtn.dataset.hooked) {
     dictateBtn.addEventListener('click', startRecording);
     dictateBtn.dataset.hooked = 'true';
-  }
-
-  if (stopBtn && !stopBtn.dataset.hooked) {
-    stopBtn.addEventListener('click', () => {
-      stopRecording();
-      clearRecording();
-    });
-    stopBtn.dataset.hooked = 'true';
   }
 
   if (submitBtn && !submitBtn.dataset.hooked) {
