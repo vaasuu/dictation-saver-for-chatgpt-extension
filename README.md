@@ -7,3 +7,7 @@ It hooks into ChatGPT’s dictation buttons and automatically captures your spee
 ## Screenshot
 
 <img width="500" alt="Extension popup window showing past recordings with date, audio duration and buttons for playback and download" src="./docs/screenshots/example.png" />
+
+## Demo video
+
+<video src="https://github.com/user-attachments/assets/e3fb67ba-dc76-4d90-8554-b5c95ec5b416" width="320" height="240" controls></video>
