@@ -102,9 +102,11 @@ function cancelRecording(): void {
 // Attach listeners to ChatGPT’s buttons
 function hookButtons(): void {
   console.log('Hook buttons');
-  const dictateBtn = document.querySelector(
-    'button[aria-label="Dictate button"]'
-  ) as HTMLElement | null;
+  const dictateBtn =
+    document.querySelector('button[aria-label="Dictate button"]') ||
+    (document.querySelector(
+      'button[aria-label="Start dictation"]'
+    ) as HTMLElement | null);
   const stopBtn = document.querySelector(
     'button[aria-label="Stop dictation"]'
   ) as HTMLElement | null;
