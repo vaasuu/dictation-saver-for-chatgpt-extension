@@ -32,6 +32,7 @@ module.exports = [
         indexedDB: 'readonly',
         BlobPart: 'readonly',
         MediaRecorder: 'readonly',
+        MediaStream: 'readonly',
         alert: 'readonly',
         clearTimeout: 'readonly',
         setTimeout: 'readonly',
