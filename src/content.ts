@@ -78,7 +78,7 @@ async function startRecording(): Promise<void> {
       console.log('Auto-stopping recording after 10 minutes');
       stopRecording();
       const submitBtn = document.querySelector(
-        'button[aria-label="Submit dictation"]'
+        'button[aria-label="Send dictated message"]'
       ) as HTMLButtonElement | null;
       if (submitBtn) submitBtn.click();
     }, 600_000);
@@ -146,23 +146,24 @@ function cancelRecording(): void {
 // Attach listeners to ChatGPT's buttons
 function hookButtons(): void {
   console.log('Hook buttons');
-  const dictateBtn =
-    document.querySelector('button[aria-label="Dictate button"]') ||
-    (document.querySelector(
-      'button[aria-label="Start dictation"]'
-    ) as HTMLElement | null);
-  const stopBtn =
-    document.querySelector('button[aria-label="Stop dictation"]') ||
-    (document.querySelector(
-      'button[aria-label="Cancel dictation"]'
-    ) as HTMLElement | null);
+  const dictateBtn = document.querySelector(
+    'button[aria-label="Start dictation"]'
+  );
+  const cancelBtn = document.querySelector(
+    'button[aria-label="Cancel dictation"]'
+  );
+  const stopBtn = document.querySelector(
+    'button[aria-label="Stop dictation"]'
+  );
   const submitBtn = document.querySelector(
-    'button[aria-label="Submit dictation"]'
+    'button[aria-label="Send dictated message"]'
   ) as HTMLButtonElement | null;
 
   console.log(
     'Button states - dictateBtn:',
     !!dictateBtn,
+    'cancelBtn:',
+    !!cancelBtn,
     'stopBtn:',
     !!stopBtn,
     'submitBtn:',
@@ -175,9 +176,15 @@ function hookButtons(): void {
     dictateBtn.dataset.hooked = 'true';
   }
 
+  if (cancelBtn && !cancelBtn.dataset.hooked) {
+    console.log('Attaching cancelRecording to cancelBtn');
+    cancelBtn.addEventListener('click', cancelRecording);
+    cancelBtn.dataset.hooked = 'true';
+  }
+
   if (stopBtn && !stopBtn.dataset.hooked) {
-    console.log('Attaching cancelRecording to stopBtn');
-    stopBtn.addEventListener('click', cancelRecording);
+    console.log('Attaching stopRecording to stopBtn');
+    stopBtn.addEventListener('click', stopRecording);
     stopBtn.dataset.hooked = 'true';
   }
 
